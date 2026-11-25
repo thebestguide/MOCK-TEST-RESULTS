@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>Mock Test Result</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background-color: #f8fafc;
+      color: #0f172a;
+      -webkit-tap-highlight-color: transparent;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center px-4 py-6 sm:py-10">
+  <main class="w-full max-w-md">
+    <!-- Header -->
+    <header class="text-center mb-6">
+      <h1 class="text-2xl font-bold tracking-tight text-slate-900">Mock Test Result</h1>
+      <p class="text-xs text-slate-500 mt-1 leading-relaxed" id="sheetTitle"></p>
+      <p class="text-[11px] font-medium text-slate-400 uppercase tracking-wider mt-0.5" id="sheetSubtitle"></p>
+    </header>
+
+    <!-- Search Box -->
+    <section class="relative mb-5" aria-label="Student Name Search">
+      <label for="nameInput" class="block text-xs font-medium text-slate-600 mb-1.5">
+        Enter Student Name
+      </label>
+      <div class="relative">
+        <input
+          id="nameInput"
+          type="text"
+          autocomplete="off"
+          autocorrect="off"
+          autocapitalize="characters"
+          spellcheck="false"
+          placeholder="Type your name (e.g. P...)"
+          aria-autocomplete="list"
+          aria-controls="suggestionsList"
+          aria-expanded="false"
+          class="w-full rounded-xl border border-slate-300 bg-white px-4 py-3.5 pr-10 text-base text-slate-900 placeholder-slate-400 shadow-sm focus:border-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-900/10 transition"
+        />
+        <button
+          id="clearBtn"
+          type="button"
+          aria-label="Clear search"
+          class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full text-slate-400 hover:bg-slate-100 hover:text-slate-700 flex items-center justify-center text-lg leading-none"
+        >
+          &times;
+        </button>
+      </div>
+
+      <!-- Autocomplete Recommendations -->
+      <ul
+        id="suggestionsList"
+        role="listbox"
+        class="hidden absolute left-0 right-0 z-20 mt-1.5 max-h-72 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg divide-y divide-slate-100"
+      ></ul>
+    </section>
+
+    <!-- Empty / No Match Hint -->
+    <div id="emptyState" class="hidden rounded-xl border border-dashed border-slate-300 bg-white/70 p-6 text-center text-sm text-slate-500">
+      No student found matching "<span id="emptyQuery" class="font-medium text-slate-700"></span>".
+    </div>
+
+    <!-- Result Card -->
+    <section id="resultCard" class="hidden rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden" aria-live="polite">
+      <!-- Student Identity -->
+      <div class="border-b border-slate-100 bg-slate-50/70 px-4 py-4">
+        <div class="flex items-start justify-between gap-3">
+          <div class="min-w-0">
+            <p class="text-[11px] font-medium uppercase tracking-wider text-slate-400">Students Name</p>
+            <h2 id="resName" class="text-lg font-bold text-slate-900 break-words mt-0.5"></h2>
+          </div>
+          <span id="resSerial" class="shrink-0 rounded-lg bg-slate-900 px-2.5 py-1 text-xs font-semibold text-white"></span>
+        </div>
+
+        <dl class="mt-3 grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+          <div>
+            <dt class="text-slate-400">Code No.</dt>
+            <dd id="resCode" class="font-medium text-slate-800 break-all"></dd>
+          </div>
+          <div>
+            <dt class="text-slate-400">Medium</dt>
+            <dd id="resMedium" class="font-medium text-slate-800"></dd>
+          </div>
+          <div class="col-span-2">
+            <dt class="text-slate-400">School Name</dt>
+            <dd id="resSchool" class="font-medium text-slate-800 break-words"></dd>
+          </div>
+          <div>
+            <dt class="text-slate-400">Centre</dt>
+            <dd id="resCentre" class="font-medium text-slate-800"></dd>
+          </div>
+          <div>
+            <dt class="text-slate-400">Contact No</dt>
+            <dd id="resContact" class="font-medium text-slate-800"></dd>
+          </div>
+        </dl>
+      </div>
+
+      <!-- Subject Marks -->
+      <div class="px-4 py-4">
+        <p class="text-[11px] font-medium uppercase tracking-wider text-slate-400 mb-2.5">Subject Marks</p>
+        <div id="marksGrid" class="grid grid-cols-2 gap-2.5"></div>
+      </div>
+
+      <!-- Total & Percentage -->
+      <div class="border-t border-slate-100 bg-slate-50/70 px-4 py-3.5 grid grid-cols-2 gap-3">
+        <div class="rounded-xl bg-white border border-slate-200 px-3 py-2.5">
+          <p class="text-[11px] text-slate-400">Total</p>
+          <p id="resTotal" class="text-lg font-bold text-slate-900 mt-0.5"></p>
+        </div>
+        <div class="rounded-xl bg-white border border-slate-200 px-3 py-2.5">
+          <p class="text-[11px] text-slate-400">Percentage(%)</p>
+          <p id="resPct" class="text-sm font-bold text-slate-900 mt-1 break-all"></p>
+        </div>
+      </div>
+    </section>
+
+    <div id="resetWrap" class="hidden mt-4 text-center">
+      <button
+        id="resetBtn"
+        type="button"
+        class="text-xs font-medium text-slate-500 hover:text-slate-900 underline underline-offset-4 py-2 px-3"
+      >
+        Search another student
+      </button>
+    </div>
+  </main>
+
+  <script>
+    const EXCEL_DATA = {"title": "MADHYAMIK CLASS X -MOCK TEST-1 MARKS SHEET, 2026-'27", "subtitle": "CENTRE: COOCHBEHAR", "headers": ["Serial  No.", "Code No.", "Students Name", "Centre", "School Name", "Contact No", "Medium", "P. Sci.", "L. Sci.", "Maths.", "Hist.", "Geog.", "Eng.", "Beng. Hindi", "Total", "Percentage(%)"], "students": [[1, "CBFBXM011", "PROTOTI BARMAN", "COOCH BEHAR", "NEW TOWN GIRLS HIGH SCHOOL", 9832188596, "BANGALI", 87, 87, 86, 85, 87, 79, 78, 589, 84.14285714285714], [2, "CBMBXM092", "ADDHYOAN ROY", "COOCH BEHAR", "ASHALATA BASU VIDYALAYA ENGLISH MEDIUM", 9932141841, "ENGLISH", 79, 88, 79, 82, 88, 82, 82, 580, 82.85714285714286], [3, "CBMBXM059", "SOUREEN DAS", "COOCH BEHAR", "ALIPURDUAR ME WILLIAM HIGH SCHOOL", 9832354114, "BANGALI", 88, 87, 80, 80, 85, 78, 79, 577, 82.42857142857143], [4, "CBMBXM004", "AVIBRATO DEY", "COOCH BEHAR", "JALPAIGURI ZILLA HIGH SCHOOL", 8637537358, "BANGALI", 84, 88, 81, 78, 79, 78, 80, 568, 81.14285714285714], [5, "CBMBXM008", "HARIPRIYA BARMAN", "COOCH BEHAR", "NEW TOWN GIRLS HIGH SCHOOL", 9679379168, "BANGALI", 82, 86, 85, 76, 85, 72, 76, 562, 80.28571428571429], [6, "CBMBXM102", "SOUMYADEEP BOSE", "COOCH BEHAR", "GOPAL NAGAR MMS HIGH SCHOOL ", 9002443286, "BANGALI", 84, 70, 88, 84, 79, 77, 74, 556, 79.42857142857143], [7, "CBMBXM003", "DEBAPRIYA ROY", "COOCH BEHAR", "JALPAIGURI ZILLA HIGH SCHOOL", 8945978104, "BANGALI", 76, 82, 86, 78, 79, 74, 80, 555, 79.28571428571429], [8, "CBMBXM063", "SINCHAN DEB", "COOCH BEHAR", "RAM BHOLA HIGH SCHOOL", 9933636802, "BANGALI", 80, 85, 86, 79, 81, 70, 73, 554, 79.14285714285714], [9, "CBMBXM053", "MOURYA DAS", "COOCH BEHAR", "JALPAIGURI ZILLA HIGH SCHOOL", 7001513181, "BANGALI", 81, 81, 82, 72, 83, 75, 79, 553, 79], [10, "CBFBXM009", "DEBANSHU BHOWMIK", "COOCH BEHAR", "JENKINS SCHOOL", 8637042290, "ENGLISH", 86, 89, 85, 70, 82, 65, 76, 553, 79], [11, "CBMBXM060", "JAYADITYA TALUKDAR", "COOCH BEHAR", "JENKINS SCHOOL", 7908857484, "ENGLISH", 83, 83, 87, 82, 73, 76, 68, 552, 78.85714285714286], [12, "CBFBXM005", "TUHIN KARMAKAR", "COOCH BEHAR", "GOPAL NAGAR MMS HIGH SCHOOL ", 8670762577, "BANGALI", 81, 83, 79, 77, 82, 69, 76, 547, 78.14285714285714], [13, "CBFBXM008", "CHITRITA DUTTA", "COOCH BEHAR", "NEW TOWN GIRLS HIGH SCHOOL", 9851325706, "BANGALI", 82, 74, 82, 79, 82, 73, 72, 544, 77.71428571428571], [14, "CBMBXM010", "SHILPI KAR", "COOCH BEHAR", "RAJARHAT HIGH SCHOOL", 9635444679, "BANGALI", 67, 81, 88, 71, 86, 74, 75, 542, 77.42857142857143], [15, "CBMBXM011", "AVIRUP BHATTACHARJEE", "COOCH BEHAR", "JALPAIGURI ZILLA HIGH SCHOOL", 9800486207, "BANGALI", 80, 86, 76, 71, 74, 70, 80, 537, 76.71428571428571], [16, "CBFBXM010", "SOUHARDA SARKAR", "COOCH BEHAR", "VIVEKANANDA VIDYA PEETH", 8918184774, "BANGALI", 87, 80, 86, 72, 81, 61, 66, 533, 76.14285714285714], [17, "CBFBXM003", "PAMELA DAS", "COOCH BEHAR", "NEW TOWN GIRLS HIGH SCHOOL", 8927905902, "BANGALI", 72, 79, 83, 68, 84, 69, 71, 526, 75.14285714285714], [18, "CBMBXM095", "DEBARSHI SEN", "COOCH BEHAR", "JALPAIGURI ZILLA HIGH SCHOOL", 7602222221, "BANGALI", 76, 80, 80, 59, 67, 74, 79, 515, 73.57142857142857], [19, "CBMBXM037", "PREYASHI GHOSH", "COOCH BEHAR", "BAIRATIGURI HIGH SCHOOL", 8927303055, "BANGALI", 77, 80, 78, 66, 75, 64, 75, 515, 73.57142857142857], [20, "CBMBXM019", "SHREYANSU BOSE", "COOCH BEHAR", "DAUKIMARI DN HIGH SCHOOL", 6294564678, "ENGLISH", 76, 79, 79, 68, 75, 67, 68, 512, 73.14285714285714], [21, "CBMBXM050", "RITOBRATA ROY", "COOCH BEHAR", "JENKINS SCHOOL", 9434872338, "ENGLISH", 79, 76, 80, 74, 63, 74, 63, 509, 72.71428571428571], [22, "CBMBXM038", "RAJASHREE DUTTA", "COOCH BEHAR", "BAIRATIGURI HIGH SCHOOL", 8389093404, "BANGALI", 76, 75, 74, 68, 73, 69, 74, 509, 72.71428571428571], [23, "CBMBXM021", "VEDPRAKASH SARKAR", "COOCH BEHAR", "DAUKIMARI DN HIGH SCHOOL", 9832350895, "ENGLISH", 79, 72, 85, 66, 66, 72, 68, 508, 72.57142857142857], [24, "CBMBXM020", "ZERIN KABIR ", "COOCH BEHAR", "DAUKIMARI DN HIGH SCHOOL", 9832515749, "ENGLISH", 71, 78, 82, 71, 72, 73, 60, 507, 72.42857142857143], [25, "CBMBXM065", "PRANJAL SARKAR", "COOCH BEHAR", "VIVEKANANDA VIDYA PEETH", 94748321026, "BANGALI", 73, 70, 81, 54, 78, 70, 75, 501, 71.57142857142857], [26, "CBMBXM056", "PRATYUSA RAY", "COOCH BEHAR", "SUNITY ACADEMY", 9475238342, "BANGALI", 68, 74, 78, 69, 77, 61, 68, 495, 70.71428571428571], [27, "CBMBXM009", "MANOSHRI DEBNATH", "COOCH BEHAR", "RAJARHAT HIGH SCHOOL", 8145159884, "BANGALI", 63, 50, 84, 65, 77, 78, 74, 491, 70.14285714285714], [28, "CBMBXM066", "DEB KUMAR DAS", "COOCH BEHAR", "JAMALDAHA TULSIDEVI HIGH SCHOOL", 9775956770, "BANGALI", 49, 74, 79, 74, 81, 62, 68, 487, 69.57142857142857], [29, "CBFBXM006", "SAYANTAN DAS", "COOCH BEHAR", "VIVEKANANDA VIDYA PEETH", 9800800177, "BANGALI", 66, 69, 78, 69, 71, 63, 58, 474, 67.71428571428571], [30, "CBMBXM002", "BIANHISHIKHA SAHA", "COOCH BEHAR", "JORAI HIGH SCHOOL", 9932581492, "BANGALI", 74, 60, 69, 65, 76, 61, 68, 473, 67.57142857142857], [31, "CBMBXM001", "BIDISHA SARKAR", "COOCH BEHAR", "NEW TOWN GIRLS HIGH SCHOOL", 9635008701, "BANGALI", 64, 68, 51, 71, 80, 66, 72, 472, 67.42857142857143], [32, "CBMBXM096", "UTATHYA SARKAR", "COOCH BEHAR", "JALPAIGURI ZILLA HIGH SCHOOL", 8250383337, "BANGALI", 74, 68, 70, 59, 61, 69, 69, 470, 67.14285714285714], [33, "CBMBXM031", "MONALISA DAS", "COOCH BEHAR", "BAIRATIGURI HIGH SCHOOL", 9378347572, "BANGALI", 59, 70, 50, 75, 76, 68, 72, 470, 67.14285714285714], [34, "CBMBXM058", "HRITAMA DAS", "COOCH BEHAR", "ASHALATA BASU VIDYALAYA ENGLISH MEDIUM", 9641022863, "BANGALI", 59, 74, 46, 81, 73, 59, 77, 469, 67], [35, "CBMBXM006", "SOMRITA RAY", "COOCH BEHAR", "NEW TOWN GIRLS HIGH SCHOOL", 9434442698, "BANGALI", 70, 70, 61, 64, 80, 59, 64, 468, 66.85714285714286], [36, "CBMBXM044", "SUAITI GANGULY", "COOCH BEHAR", "DHUPGURI GIRLS HIGH SCHOOL", 9332847249, "BANGALI", 50, 72, 67, 65, 76, 57, 75, 462, 66], [37, "CBMBXM034", "DHRUBA ROY", "COOCH BEHAR", "VIDYASHRAM D.V HIGH SCHOOL", 6297641730, "BANGALI", 37, 76, 75, 71, 73, 60, 68, 460, 65.71428571428571], [38, "CBFBXM001", "PANCHAK DAS", "COOCH BEHAR", "VIVEKANANDA VIDYA PEETH", 9733230023, "BANGALI", 60, 69, 57, 61, 73, 74, 64, 458, 65.42857142857143], [39, "CBMBXM014", "SOUVIK KUMAR DAS", "COOCH BEHAR", "ALIPURDUAR ME WILLIAM HIGH SCHOOL", 8101100846, "BANGALI", 59, 74, 76, 45, 61, 74, 67, 456, 65.14285714285714], [40, "BMBXM070", "ANISHA GHOSH", "COOCH BEHAR", "DHUPGURI GIRLS HIGH SCHOOL", 9832415096, "BANGALI", 53, 66, 71, 58, 67, 55, 75, 445, 63.57142857142857], [41, "CBMBXM057", "ANUSHKA CHAKRABORTY", "COOCH BEHAR", "MAHARANI INDIRA DEVI BALIKA VIDYALAYA", 9635739546, "BANGALI", 64, 69, 59, 66, 63, 45, 71, 437, 62.42857142857143], [42, "CBMBXM005", "SAPTAK DAS", "COOCH BEHAR", "JALPAIGURI ZILLA HIGH SCHOOL", 6297174896, "BANGALI", 79, 72, 73, 34, 60, 55, 64, 437, 62.42857142857143], [43, "CBMBXM077", "SOURAV SARKAR", "COOCH BEHAR", "DAUKIMARI DN HIGH SCHOOL", 8617891537, "BANGALI", 72, 72, 69, 58, 49, 64, 50, 434, 62], [44, "CBMBXM027", "PRATIK DHAR", "COOCH BEHAR", "JENKINS SCHOOL", 9434008735, "BANGALI", 40, 70, 68, 65, 67, 56, 62, 428, 61.142857142857146], [45, "CBMBXM043", "PARINITA ROY", "COOCH BEHAR", "GADHEYARKUTHI HIGH SCHOOL", 8509620281, "BANGALI", 63, 77, 78, 33, 70, 51, 46, 418, 59.714285714285715], [46, "CBMBXM042", "TILOTTAMA CHAKRABORTY", "COOCH BEHAR", "BAIRATIGURI HIGH SCHOOL", 9832488506, "BANGALI", 42, 73, 46, 63, 70, 57, 67, 418, 59.714285714285715], [47, "CBMBXM047", "SAYAN MODOK", "COOCH BEHAR", "DAUKIMARI DN HIGH SCHOOL", "", "BANGALI", 56, 61, 71, 59, 62, 56, 50, 415, 59.285714285714285], [48, "CBMBXM023", "USHASHRE BARMAN", "COOCH BEHAR", "NEW TOWN GIRLS HIGH SCHOOL", 9933804637, "BANGALI", 50, 63, 58, 52, 62, 57, 65, 407, 58.142857142857146], [49, "CBMBXM022", "TRIBENI MALLICK", "COOCH BEHAR", "DAUKIMARI DN HIGH SCHOOL", "", "ENGLISH", 52, 70, 37, 68, 62, 68, 45, 402, 57.42857142857143], [50, "CBMCXM039", "DIBOSMITA BANIK", "COOCH BEHAR", "BAIRATIGURI HIGH SCHOOL", 7602597685, "BANGALI", 50, 62, 42, 65, 67, 50, 65, 401, 57.285714285714285], [51, "CBMBXM068", "JUN ROY", "COOCH BEHAR", "BAIRATIGURI HIGH SCHOOL", 8016946526, "BANGALI", 59, 72, 57, 44, 52, 54, 61, 399, 57], [52, "CBMBXM007", "DEBANGANA SHIL ", "COOCH BEHAR", "SUNITIBALA SADAR GIRLS  HIGH SCHOOL", 7029525287, "BANGALI", 56, 73, 31, 55, 57, 51, 71, 394, 56.285714285714285], [53, "CBMBXM046", "RISHITA ADHIKARI", "COOCH BEHAR", "DAUKIMARI DN HIGH SCHOOL", 9609887608, "BANGALI", 50, 61, 37, 45, 80, 59, 60, 392, 56], [54, "CBMBXM075", "MOUSONA PARVIN", "COOCH BEHAR", "DHUPGURI GIRLS HIGH SCHOOL", 9832679977, "BANGALI", 42, 64, 68, 67, 57, 24, 64, 386, 55.142857142857146], [55, "CBMBXM078", "CHIDAMBAR ROY", "COOCH BEHAR", "DAUKIMARI DN HIGH SCHOOL", 8509399196, "BANGALI", 66, 64, 61, 36, 48, 54, 40, 369, 52.714285714285715], [56, "CBMBXM084", "IMTEHAN HOSSAIN", "COOCH BEHAR", "JENKINS SCHOOL", 9734125549, "BANGALI", 46, 51, 57, 44, 51, 50, 64, 363, 51.857142857142854], [57, "CBMBXM035", "ABHIK ROY", "COOCH BEHAR", "VIDYASHRAM D.V HIGH SCHOOL", 8016431488, "BANGALI", 58, 60, "", 58, 66, 51, 58, 351, 50.142857142857146], [58, "CBMBXM015", "TAMOJIT GHOSH ", "COOCH BEHAR", "RAM BHOLA HIGH SCHOOL", 6294370218, "BANGALI", 39, 61, 30, 60, 53, 41, 61, 345, 49.285714285714285], [59, "CBMBXM67", "RUDRONEEL MITRA", "COOCH BEHAR", "BAIRATIGURI HIGH SCHOOL", 9749342861, "BANGALI", 45, 64, 33, 49, 52, 53, 44, 340, 48.57142857142857], [60, "CBMBXM069", "OISHEE ROY", "COOCH BEHAR", "BAIRATIGURI HIGH ", 6297392908, "BANGALI", 37, 51, 24, 43, 61, 49, 55, 320, 45.714285714285715], [61, "CBMBXM032", "DHRUBO SARKAR", "COOCH BEHAR", "VIDYASHRAM D.V HIGH SCHOOL", 7477623327, "BANGALI", 26, 69, "", 60, 51, 50, 60, 316, 45.142857142857146], [62, "CBMBXM055", "RISHIKA BANERJEE", "COOCH BEHAR", "NEW TOWN GIRLS HIGH SCHOOL", 9851354245, "BANGALI", 17, 53, 31, 48, 45, 65, 51, 310, 44.285714285714285], [63, "CBMBXM054", "DEBOPRIYA DEY", "COOCH BEHAR", "NEW TOWN GIRLS HIGH SCHOOL", 8250377955, "BANGALI", 21, 53, 28, 52, 47, 53, 56, 310, 44.285714285714285], [64, "CBMBXM074", "ISHAN SARKAR", "COOCH BEHAR", "DAUKIMARI DN HIGH SCHOOL", 9749776758, "BANGALI", 29, 57, 40, 28, 59, 61, 32, 306, 43.714285714285715], [65, "CBMBXM048", "CAMELIA ROY", "COOCH BEHAR", "VIDYASHRAM D.V HIGH SCHOOL", 9749595899, "BANGALI", 31, 42, 44, 38, 53, 34, 51, 293, 41.857142857142854], [66, "CBMBXM098", "DEBOJIT BARMAN", "COOCH BEHAR", "JENKINS SCHOOL", 8116516355, "BANGALI", 22, 30, 41, 48, 41, 59, 47, 288, 41.142857142857146], [67, "CBMBXM076", "ADITYA SARKAR", "COOCH BEHAR", "DAUKIMARI DN HIGH SCHOOL", 9933735173, "BANGALI", 28, 53, 37, 33, 57, 47, 26, 281, 40.142857142857146], [68, "CBMBXM040", "SAYANTANI DAS", "COOCH BEHAR", "BAIRATIGURI HIGH SCHOOL", 9641918552, "BANGALI", 29, 49, 28, 39, 39, 41, 56, 281, 40.142857142857146], [69, "CBMBXM045", "BARNI ROY", "COOCH BEHAR", "DAUKIMARI DN HIGH SCHOOL", 9382061581, "BANGALI", 15, 51, 15, 34, 41, 51, 61, 268, 38.285714285714285], [70, "CBMBXM036", "WAHIDA SHABNAM", "COOCH BEHAR", "VIDYASHRAM D.V HIGH SCHOOL", 8001937354, "BANGALI", 23, 49, 21, 36, 45, 36, 48, 258, 36.857142857142854], [71, "CBMBXM073", "DEEP ROY", "COOCH BEHAR", "GADHEYARKUTHI HIGH SCHOOL", 8967403711, "BANGALI", 26, 47, 13, 20, 60, 29, 36, 231, 33], [72, "CBFBXM007", "RUPAM MAHANTA", "COOCH BEHAR", "TUFANJANG HARIRDHAM HIGH SCHOOL", 8617860783, "BANGALI", 70, 77, 70, "AB", "AB", "AB", "AB", 217, 31], [73, "CBMBXM071", "DEPANJANA SARKAR", "COOCH BEHAR", "DAUKIMARI DN HIGH SCHOOL", 7063779262, "BANGALI", 20, 30, 18, 22, 37, 42, 43, 212, 30.285714285714285], [74, "CBMBXM041", "NISHA ROY", "COOCH BEHAR", "DAUKIMARI DN HIGH SCHOOL", 6296452004, "BANGALI", 12, 30, 17, 28, 42, 31, 31, 191, 27.285714285714285], [75, "CBMBXM072", "SARMI SARKAR", "COOCH BEHAR", "DAUKIMARI DN HIGH ", 9093070417, "BANGALI", 15, 24, 12, 22, 40, 31, 36, 180, 25.714285714285715], [76, "CBMBXM033", "RANI PARVIN", "COOCH BEHAR", "VIDYASHRAM D.V HIGH SCHOOL", 7864091135, "BANGALI", 13, 31, 13, 22, 32, 29, 33, 173, 24.714285714285715], [77, "CBMBXM104", "MEGHA ADHIKARI", "COOCH BEHAR", "GOPAL NAGAR MMS HIGH SCHOOL ", 9679754540, "BANGALI", 51, "AB", 63, "AB", "AB", "AB", "AB", 114, 16.285714285714285]]};
+
+    const headers = EXCEL_DATA.headers;
+    const students = EXCEL_DATA.students;
+
+    const sheetTitleEl = document.getElementById('sheetTitle');
+    const sheetSubtitleEl = document.getElementById('sheetSubtitle');
+    const nameInput = document.getElementById('nameInput');
+    const clearBtn = document.getElementById('clearBtn');
+    const suggestionsList = document.getElementById('suggestionsList');
+    const emptyState = document.getElementById('emptyState');
+    const emptyQuery = document.getElementById('emptyQuery');
+    const resultCard = document.getElementById('resultCard');
+    const resetWrap = document.getElementById('resetWrap');
+    const resetBtn = document.getElementById('resetBtn');
+
+    sheetTitleEl.textContent = EXCEL_DATA.title;
+    sheetSubtitleEl.textContent = EXCEL_DATA.subtitle;
+
+    let activeIndex = -1;
+    let currentMatches = [];
+
+    function rawStr(val) {
+      return val === null || val === undefined ? '' : String(val);
+    }
+
+    function getMatches(query) {
+      const q = query.trim().toLowerCase();
+      if (!q) return [];
+      const startsWith = [];
+      const contains = [];
+      for (const row of students) {
+        const name = rawStr(row[2]);
+        const lower = name.toLowerCase();
+        if (lower.startsWith(q)) {
+          startsWith.push(row);
+        } else if (lower.includes(q)) {
+          contains.push(row);
+        }
+      }
+      return startsWith.concat(contains);
+    }
+
+    function escapeHtml(str) {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function highlightMatch(name, query) {
+      const q = query.trim();
+      if (!q) return escapeHtml(name);
+      const idx = name.toLowerCase().indexOf(q.toLowerCase());
+      if (idx === -1) return escapeHtml(name);
+      const before = escapeHtml(name.slice(0, idx));
+      const match = escapeHtml(name.slice(idx, idx + q.length));
+      const after = escapeHtml(name.slice(idx + q.length));
+      return `${before}<mark class="bg-amber-100 text-slate-900 rounded px-0.5 font-semibold">${match}</mark>${after}`;
+    }
+
+    function renderSuggestions(matches, query) {
+      currentMatches = matches;
+      activeIndex = -1;
+      suggestionsList.innerHTML = '';
+
+      if (!query.trim()) {
+        suggestionsList.classList.add('hidden');
+        nameInput.setAttribute('aria-expanded', 'false');
+        emptyState.classList.add('hidden');
+        return;
+      }
+
+      if (matches.length === 0) {
+        suggestionsList.classList.add('hidden');
+        nameInput.setAttribute('aria-expanded', 'false');
+        emptyQuery.textContent = query.trim();
+        emptyState.classList.remove('hidden');
+        return;
+      }
+
+      emptyState.classList.add('hidden');
+      matches.forEach((row, idx) => {
+        const li = document.createElement('li');
+        li.setAttribute('role', 'option');
+        li.setAttribute('aria-selected', 'false');
+        li.dataset.index = String(idx);
+        li.className = 'px-4 py-3 cursor-pointer hover:bg-slate-50 active:bg-slate-100 transition flex items-center justify-between gap-2 min-h-[48px]';
+        li.innerHTML = `
+          <div class="min-w-0">
+            <div class="text-sm font-medium text-slate-900 truncate">${highlightMatch(rawStr(row[2]), query)}</div>
+            <div class="text-[11px] text-slate-400 truncate">${escapeHtml(rawStr(row[4]))}</div>
+          </div>
+          <span class="shrink-0 text-[11px] font-mono text-slate-500">${escapeHtml(rawStr(row[1]))}</span>
+        `;
+        li.addEventListener('mousedown', (e) => {
+          e.preventDefault();
+          selectStudent(row);
+        });
+        suggestionsList.appendChild(li);
+      });
+
+      suggestionsList.classList.remove('hidden');
+      nameInput.setAttribute('aria-expanded', 'true');
+    }
+
+    function updateActiveHighlight() {
+      const items = suggestionsList.querySelectorAll('li');
+      items.forEach((item, idx) => {
+        if (idx === activeIndex) {
+          item.classList.add('bg-slate-100');
+          item.setAttribute('aria-selected', 'true');
+          item.scrollIntoView({ block: 'nearest' });
+        } else {
+          item.classList.remove('bg-slate-100');
+          item.setAttribute('aria-selected', 'false');
+        }
+      });
+    }
+
+    function selectStudent(row) {
+      nameInput.value = rawStr(row[2]);
+      clearBtn.classList.remove('hidden');
+      suggestionsList.classList.add('hidden');
+      nameInput.setAttribute('aria-expanded', 'false');
+      emptyState.classList.add('hidden');
+
+      document.getElementById('resSerial').textContent = `#${rawStr(row[0])}`;
+      document.getElementById('resCode').textContent = rawStr(row[1]);
+      document.getElementById('resName').textContent = rawStr(row[2]);
+      document.getElementById('resCentre').textContent = rawStr(row[3]);
+      document.getElementById('resSchool').textContent = rawStr(row[4]);
+      document.getElementById('resContact').textContent = rawStr(row[5]);
+      document.getElementById('resMedium').textContent = rawStr(row[6]);
+
+      const marksGrid = document.getElementById('marksGrid');
+      marksGrid.innerHTML = '';
+      for (let c = 7; c <= 13; c++) {
+        const label = headers[c];
+        const val = rawStr(row[c]);
+        const isAbsent = val.trim().toUpperCase() === 'AB';
+        const card = document.createElement('div');
+        card.className = 'rounded-xl border border-slate-200 px-3 py-2.5 flex items-center justify-between gap-2 bg-white';
+        card.innerHTML = `
+          <span class="text-xs text-slate-500">${escapeHtml(label)}</span>
+          <span class="text-sm font-semibold ${isAbsent ? 'text-rose-600' : 'text-slate-900'}">${escapeHtml(val)}</span>
+        `;
+        marksGrid.appendChild(card);
+      }
+
+      document.getElementById('resTotal').textContent = rawStr(row[14]);
+      document.getElementById('resPct').textContent = rawStr(row[15]);
+
+      resultCard.classList.remove('hidden');
+      resetWrap.classList.remove('hidden');
+      nameInput.blur();
+    }
+
+    function resetSearch() {
+      nameInput.value = '';
+      clearBtn.classList.add('hidden');
+      suggestionsList.classList.add('hidden');
+      nameInput.setAttribute('aria-expanded', 'false');
+      emptyState.classList.add('hidden');
+      resultCard.classList.add('hidden');
+      resetWrap.classList.add('hidden');
+      nameInput.focus();
+    }
+
+    nameInput.addEventListener('input', () => {
+      const val = nameInput.value;
+      if (val.length > 0) {
+        clearBtn.classList.remove('hidden');
+      } else {
+        clearBtn.classList.add('hidden');
+        resultCard.classList.add('hidden');
+        resetWrap.classList.add('hidden');
+      }
+      const matches = getMatches(val);
+      renderSuggestions(matches, val);
+    });
+
+    nameInput.addEventListener('keydown', (e) => {
+      if (suggestionsList.classList.contains('hidden')) {
+        if (e.key === 'Enter' && currentMatches.length === 1) {
+          e.preventDefault();
+          selectStudent(currentMatches[0]);
+        }
+        return;
+      }
+
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        activeIndex = (activeIndex + 1) % currentMatches.length;
+        updateActiveHighlight();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        activeIndex = (activeIndex - 1 + currentMatches.length) % currentMatches.length;
+        updateActiveHighlight();
+      } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (activeIndex >= 0 && currentMatches[activeIndex]) {
+          selectStudent(currentMatches[activeIndex]);
+        } else if (currentMatches.length > 0) {
+          selectStudent(currentMatches[0]);
+        }
+      } else if (e.key === 'Escape') {
+        suggestionsList.classList.add('hidden');
+        nameInput.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!nameInput.contains(e.target) && !suggestionsList.contains(e.target)) {
+        suggestionsList.classList.add('hidden');
+        nameInput.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    clearBtn.addEventListener('click', resetSearch);
+    resetBtn.addEventListener('click', resetSearch);
+  </script>
+</body>
+</html>
